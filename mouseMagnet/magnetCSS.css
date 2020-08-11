@@ -1,0 +1,10 @@
+.mouseMagnetZone{
+    cursor: url("mouseIcon/transparent.ico"), default;
+    position: absolute;
+ }
+
+.mouseMagnetCur{
+    position: absolute;
+    width: 13px;
+    height: 19px;
+}

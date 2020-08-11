@@ -1,18 +1,47 @@
-$.widget('custom.switch', {
+$.widget('custom.magnet', {
     options: {
-        action: 'on',//启用自动的点击动作处理off关闭
-        type: 'recipe',//loop是循环型，多个开关项之间为0-1-2-0-1-2，recipe是往复型，0-1-2-1-0-1-2
-        value: 0,//value决定了当前开关显示状态，会与鼠标动作绑定
-        iconList: [
-            './Switch/icons/2-switch-on.png',
-            './Switch/icons/2-switch-mid.png',
-            './Switch/icons/2-switch-off.png'
-        ],//这个Array里面放置显示的icon，实际控件显示的图片是iconList[value]
-        size:[80, 40]
+        left : 40,
+        right : 40,
+        top : 40,
+        bottom : 40,
+        icon : 'mouseMagnet/mouseIcon/mouseCur.png'
     },
-    _reverse: false,
     _create: function () {
-        if(this.options.value < 0){
+        this.element.before('<div id="' + this.element[0].id + '_magZone" class="mouseMagnetZone"></div>');
+        var magZone = $('#' + this.element[0].id + '_magZone');
+        magZone.css('left', (this.element.position().left - this.options.left) + 'px');
+        magZone.css('top', (this.element.position().top - this.options.top) + 'px');
+        magZone.css('width', (this.element.width() + this.options.left + this.options.right) + 'px');
+        magZone.css('height', (this.element.height() + this.options.top + this.options.bottom) + 'px');
+        this.element.after('<img id="' + this.element[0].id + '_magCur" src="' + this.options.icon + '" class="mouseMagnetCur mouseMagnetZone">');
+        var magCur = $('#' + this.element[0].id + '_magCur');
+        magCur.css('visibility', 'hidden');
+        magZone.data('options', this.options);
+        magZone.data('magCur', magCur);
+        magZone.data('magObj', this.element);
+        magZone.bind('mousemove', function (event) {
+            let curX = 0;
+            let curY = 0;
+            if(event.offsetX < $('#' + this.id).data('options').left){curX = 3;}
+            else if(event.offsetX > ($('#' + this.id).width() - $('#' + this.id).data('options').right)){
+                curX = $('#' + this.id).width() - $('#' + this.id).data('options').right - $('#' + this.id).data('options').left - 3;
+            }
+            else{curX = event.offsetX - $('#' + this.id).data('options').left;}
+
+            if(event.offsetY < $('#' + this.id).data('options').top){curY = 3;}
+            else if(event.offsetY > ($('#' + this.id).height() - $('#' + this.id).data('options').bottom)){
+                curY = $('#' + this.id).height() - $('#' + this.id).data('options').top - $('#' + this.id).data('options').bottom - 3;
+            }
+            else{curY = event.offsetY - $('#' + this.id).data('options').top;}
+            $('#' + this.id).data('magCur').css('left', (curX + $('#' + this.id).data('magObj').position().left + 'px'));
+            $('#' + this.id).data('magCur').css('top', (curY + $('#' + this.id).data('magObj').position().top + 'px'));
+        });
+        magZone.bind('mouseleave', this._curHide);
+        magZone.bind('mouseenter', this._curShow);
+        window.removeEventListener('resize', this._curResize);
+        window.addEventListener('resize', this._curResize);
+        //this._curHide();
+        /*if(this.options.value < 0){
             this.options.value = 0;
         }
         this.element.switchLeftClick = this._leftClick();
@@ -41,7 +70,41 @@ $.widget('custom.switch', {
                 }
             }
         });
-        this._refresh();
+        this._refresh();*/
+    },
+    _curHide: function(){
+        $('#' + this.id).data('magCur').css('visibility', 'hidden');
+    },
+    _curShow: function(){
+        $('#' + this.id).data('magCur').css('visibility', 'visible');
+    },
+    detectZoom: function() {
+        var ratio = 0,
+            screen = window.screen,
+            ua = navigator.userAgent.toLowerCase();
+
+        if (window.devicePixelRatio !== undefined) {
+            ratio = window.devicePixelRatio;
+        }
+        else if (~ua.indexOf('msie')) {
+            if (screen.deviceXDPI && screen.logicalXDPI) {
+                ratio = screen.deviceXDPI / screen.logicalXDPI;
+            }
+        }
+        else if (window.outerWidth !== undefined && window.innerWidth !== undefined) {
+            ratio = window.outerWidth / window.innerWidth;
+        }
+        if (ratio) {
+            ratio = Math.round(ratio * 100);
+        }
+        return ratio;
+    },
+    _curResize: function(){
+        let zoom = $.custom.magnet().detectZoom();
+        if(zoom != 100){
+            $('.mouseMagnetCur').css('height', 19 * 100 / zoom + 'px');
+            $('.mouseMagnetCur').css('width', 13 * 100 / zoom + 'px');
+        }
     },
     _refresh: function(){
         this.element.css('width', this.options.size[0] + 'px');

@@ -19,3 +19,5 @@ let switch8List = [
 $('#test8Switch').switch('iconList', switch8List);
 $('#test8Switch').switch('size', [200, 200]);
 $('#test8Switch').switch('type', 'loop');
+
+$('#test001').magnet();
